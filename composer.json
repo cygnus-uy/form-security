@@ -1,17 +1,18 @@
 {
-    "name": "cygnus-uy/template-composer-library",
+    "name": "cygnus-uy/form-security",
     "type": "library",
-    "description": "Plantilla base para desarrollar librerías.",
+    "description": "Validación de datos de formularios y anti-spam.",
     "keywords": [
         "php"
     ],
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "symfony/security-csrf": "^5.4"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "CygnusUy\\LibraryName\\": "src/"
+            "CygnusUy\\FormSecurity\\": "src/"
         },
         "exclude-from-classmap": [
             "src/Tests/"
@@ -23,7 +24,7 @@
             "email": "samuel@cygnus.com.uy"
         }
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "require-dev": {
         "phpunit/phpunit": "9.5",
         "friendsofphp/php-cs-fixer": "dev-master"

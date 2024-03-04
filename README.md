@@ -18,7 +18,7 @@ composer require cygnus-uy/{library-name}
 ```php
 <?php
 
-use CygnusUy\LibraryName\FunctionClass;
+use CygnusUy\FormSecurity\FunctionClass;
 
 require 'vendor/autoload.php';
 
