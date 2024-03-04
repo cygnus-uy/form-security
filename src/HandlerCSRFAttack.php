@@ -125,8 +125,7 @@ final class HandlerCSRFAttack implements HandlerInterface
                 session_start();
             }
 
-            $tokenId = $_SESSION['tokenId'];
-
+            $tokenId = isset($_SESSION['tokenId']) ? $_SESSION['tokenId'] : $this->hideTokenId($tokenId);
             $tokenId = base64_decode($tokenId);
         }
 
