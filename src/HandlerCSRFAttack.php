@@ -16,6 +16,8 @@ final class HandlerCSRFAttack implements HandlerInterface
     private ConfigInterface $config;
     private ?array $args;
 
+    public const DEFAULT_TOKEN_ID = 'TokenId';
+
     public function __construct(?callable $manager = null, ?array $args = null, ?ConfigInterface $initialConfig = null)
     {
         $this->manager = $manager;
@@ -30,6 +32,14 @@ final class HandlerCSRFAttack implements HandlerInterface
             $CSRF_ATTACK_ENABLE = $CSRF_ATTACK_ENABLE == 'true' || $CSRF_ATTACK_ENABLE == '1' ? true : false;
 
             $this->config->set('CSRF_ATTACK_ENABLE', $CSRF_ATTACK_ENABLE);
+        }
+
+        if (!$this->config->has('CSRF_ATTACK_HIDE_TOKEN_ID')) {
+
+            $CSRF_ATTACK_HIDE_TOKEN_ID = getenv('CSRF_ATTACK_HIDE_TOKEN_ID') ? getenv('CSRF_ATTACK_HIDE_TOKEN_ID') : (isset($_ENV['CSRF_ATTACK_HIDE_TOKEN_ID']) ? $_ENV['CSRF_ATTACK_HIDE_TOKEN_ID'] : null);
+            $CSRF_ATTACK_HIDE_TOKEN_ID = $CSRF_ATTACK_HIDE_TOKEN_ID == 'true' || $CSRF_ATTACK_HIDE_TOKEN_ID == '1' ? true : false;
+
+            $this->config->set('CSRF_ATTACK_HIDE_TOKEN_ID', $CSRF_ATTACK_HIDE_TOKEN_ID);
         }
 
         if ($this->config->get('CSRF_ATTACK_ENABLE')) {
@@ -48,11 +58,11 @@ final class HandlerCSRFAttack implements HandlerInterface
 
             if ($this->defaultManager) {
 
-                $tokenId = $this->args['tokenId'] ?? 'tokenId';
+                $tokenId = $this->showTokenId($this->args['tokenId']) ?? self::DEFAULT_TOKEN_ID;
                 $token = $this->defaultManager->getToken($tokenId);
 
                 return [
-                    $token->getId() => $token->getValue()
+                    $this->hideTokenId($token->getId()) => $token->getValue()
                 ];
             } elseif (isset($this->args['requiredEntries'])) {
 
@@ -76,7 +86,7 @@ final class HandlerCSRFAttack implements HandlerInterface
 
                 if ($this->defaultManager) {
 
-                    $tokenId = $this->args['tokenId'] ?? 'tokenId';
+                    $tokenId = $this->showTokenId($this->args['tokenId']) ?? self::DEFAULT_TOKEN_ID;
 
                     return $this->defaultManager->isTokenValid(new CsrfToken($tokenId, $formData[$tokenId]));
                 }
@@ -87,5 +97,39 @@ final class HandlerCSRFAttack implements HandlerInterface
         }
 
         return false;
+    }
+
+    private function hideTokenId(string $tokenId): string
+    {
+        if (php_sapi_name() !== 'cli' && $this->config->get('CSRF_ATTACK_HIDE_TOKEN_ID')) {
+
+            if (\PHP_SESSION_NONE === session_status()) {
+
+                session_start();
+            }
+
+            $_SESSION['tokenId'] = base64_encode(md5("{$tokenId}-" . time(), true));
+
+            $tokenId = $_SESSION['tokenId'];
+        }
+
+        return $tokenId;
+    }
+
+    private function showTokenId(string $tokenId): string
+    {
+        if (php_sapi_name() !== 'cli' && $this->config->get('CSRF_ATTACK_HIDE_TOKEN_ID')) {
+
+            if (\PHP_SESSION_NONE === session_status()) {
+
+                session_start();
+            }
+
+            $tokenId = $_SESSION['tokenId'];
+
+            $tokenId = base64_decode($tokenId);
+        }
+
+        return $tokenId;
     }
 }

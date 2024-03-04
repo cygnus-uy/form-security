@@ -25,5 +25,6 @@ xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
 	<php>
 		<env name="APP_ENV" value="dev"/>
 		<env name="CSRF_ATTACK_ENABLE" value="true"/>
+		<env name="CSRF_ATTACK_HIDE_TOKEN_ID" value="true"/>
 	</php>
 </phpunit>

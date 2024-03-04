@@ -44,7 +44,7 @@ class FormSecurityTest extends TestCase
         $formChecker->setFormData(['token_' => $requiredEntries['token_']]);
 
         $isSubmitted = $formChecker->isSubmitted();
-        
+
         $this->assertFalse($isSubmitted);
     }
 }
