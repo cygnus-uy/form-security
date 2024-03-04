@@ -1,0 +1,7 @@
+{
+	"[php]": {
+		"editor.defaultFormatter": "junstyle.php-cs-fixer"
+	},
+	"php-cs-fixer.documentFormattingProvider": false,
+	"php-cs-fixer.executablePath": "vendor/bin/php-cs-fixer.bat"
+}

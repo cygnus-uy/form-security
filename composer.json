@@ -1,0 +1,40 @@
+{
+    "name": "cygnus-uy/template-composer-library",
+    "type": "library",
+    "description": "Plantilla base para desarrollar librerías.",
+    "keywords": [
+        "php"
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "CygnusUy\\LibraryName\\": "src/"
+        },
+        "exclude-from-classmap": [
+            "src/Tests/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Samuel Alvarez Quintero",
+            "email": "samuel@cygnus.com.uy"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require-dev": {
+        "phpunit/phpunit": "9.5",
+        "friendsofphp/php-cs-fixer": "dev-master"
+    },
+    "scripts": {
+        "format": [
+            "php vendor\/bin\/php-cs-fixer fix .\/src",
+            "php vendor\/bin\/php-cs-fixer fix .\/tests"
+        ],
+        "phpunit": [
+            "php vendor\/bin\/phpunit"
+        ]
+    }
+}
