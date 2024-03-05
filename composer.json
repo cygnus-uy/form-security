@@ -18,6 +18,11 @@
             "src/Tests/"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "CygnusUy\\FormSecurity\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Samuel Alvarez Quintero",
@@ -27,15 +32,21 @@
     "minimum-stability": "stable",
     "require-dev": {
         "phpunit/phpunit": "9.5",
-        "friendsofphp/php-cs-fixer": "dev-master"
+        "friendsofphp/php-cs-fixer": "^3.51",
+        "squizlabs/php_codesniffer": "^3.9"
     },
     "scripts": {
         "format": [
-            "php vendor\/bin\/php-cs-fixer fix .\/src",
-            "php vendor\/bin\/php-cs-fixer fix .\/tests"
+            "php vendor/bin/php-cs-fixer fix .\/src",
+            "php vendor/bin/php-cs-fixer fix .\/tests"
+        ],
+        "fix": [
+            "vendor/bin/phpcbf src tests"
         ],
         "phpunit": [
-            "php vendor\/bin\/phpunit"
-        ]
+            "php vendor/bin/phpunit"
+        ],
+        "coverage": "vendor/bin/phpunit --coverage-clover=coverage.xml",
+        "htmlCoverage": "vendor/bin/phpunit --coverage-html coverage"
     }
 }

@@ -1,16 +1,15 @@
-# Template Composer Library
+# Form Security
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+Librería PHP para filtrar y validar los campos de un formulario al ser recibidos en el servidor.
 
 ## Características
 
-- Primera característica
-- Segunda característica
+- Prevención de ataques CSRF
 
 ## Instalación
 
 ```sh
-composer require cygnus-uy/{library-name}
+composer require cygnus-uy/form-security
 ```
 
 ## Ejemplo
@@ -18,10 +17,19 @@ composer require cygnus-uy/{library-name}
 ```php
 <?php
 
-use CygnusUy\FormSecurity\FunctionClass;
+use CygnusUy\FormSecurity\FormChecker;
+use CygnusUy\FormSecurity\HandlerCSRFAttack;
 
 require 'vendor/autoload.php';
 
-$functionInstance = new FunctionClass(true);
+$formChecker = new FormChecker([]);
+$formChecker->addCheckerHandler(
+    HandlerCSRFAttack::class,
+    new HandlerCSRFAttack(null, [
+        'namespace' => 'creatierra_',
+        'tokenId' => 'token_',
+    ])
+);
+$requiredEntries = $formChecker->getRequiredEntries();
 
 ```

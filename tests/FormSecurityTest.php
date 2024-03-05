@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace CygnusUy\FormSecurity\Tests;
+
 use CygnusUy\FormSecurity\FormChecker;
 use CygnusUy\FormSecurity\HandlerCSRFAttack;
 use PHPUnit\Framework\TestCase;
@@ -18,33 +20,39 @@ class FormSecurityTest extends TestCase
         $this->assertNotEmpty($this->CSRF_ATTACK_ENABLE);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testForm()
     {
         $this->init();
 
         $formChecker = new FormChecker([]);
-
+        $tokenId = 'token_';
         $formChecker->addCheckerHandler(
             HandlerCSRFAttack::class,
-            new HandlerCSRFAttack(null, [
-                'namespace' => 'test_',
-                'tokenId' => 'token_',
-                'storage' => $this->createMock(TokenStorageInterface::class),
-            ])
+            new HandlerCSRFAttack(
+                null,
+                [
+                    'namespace' => 'test_',
+                    'tokenId' => $tokenId,
+                    'storage' => $this->createMock(TokenStorageInterface::class),
+                ]
+            )
         );
         $requiredEntries = $formChecker->getRequiredEntries();
 
         $this->assertNotEmpty($formChecker);
 
-        var_dump(['token_' => $requiredEntries['token_']]);
-        echo "\n";
-
         $this->assertIsArray($requiredEntries);
 
-        $formChecker->setFormData(['token_' => $requiredEntries['token_']]);
+        foreach ($requiredEntries as $key => $value) {
 
-        $isSubmitted = $formChecker->isSubmitted();
+            $formData = [$key => $value];
+            $formChecker->setFormData($formData);
+            $isSubmitted = $formChecker->isSubmitted();
 
-        $this->assertFalse($isSubmitted);
+            $this->assertTrue($isSubmitted);
+        }
     }
 }

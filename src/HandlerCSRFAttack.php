@@ -56,10 +56,12 @@ final class HandlerCSRFAttack implements HandlerInterface
     {
         if ($this->config->get('CSRF_ATTACK_ENABLE')) {
 
+            $this->sessionStart();
+
             if ($this->defaultManager) {
 
-                $tokenId = $this->showTokenId($this->args['tokenId']) ?? self::DEFAULT_TOKEN_ID;
-                $token = $this->defaultManager->getToken($tokenId);
+                $tokenId = $this->args['tokenId'] ?? self::DEFAULT_TOKEN_ID;
+                $token = $this->defaultManager->refreshToken($tokenId);
 
                 return [
                     $this->hideTokenId($token->getId()) => $token->getValue()
@@ -86,9 +88,12 @@ final class HandlerCSRFAttack implements HandlerInterface
 
                 if ($this->defaultManager) {
 
-                    $tokenId = $this->showTokenId($this->args['tokenId']) ?? self::DEFAULT_TOKEN_ID;
+                    $this->sessionStart();
 
-                    return $this->defaultManager->isTokenValid(new CsrfToken($tokenId, $formData[$tokenId]));
+                    $tokenId = isset($_SESSION['tokenId']) ? $_SESSION['tokenId'] : $this->args['tokenId'];
+                    $token = new CsrfToken($tokenId, $formData[$tokenId]);
+
+                    return $this->defaultManager->isTokenValid($token);
                 }
             }
         } else {
@@ -99,16 +104,19 @@ final class HandlerCSRFAttack implements HandlerInterface
         return false;
     }
 
+    /**
+     * hideTokenId function
+     *
+     * @param string $tokenId
+     * @return string
+     */
     private function hideTokenId(string $tokenId): string
     {
-        if (php_sapi_name() !== 'cli' && $this->config->get('CSRF_ATTACK_HIDE_TOKEN_ID')) {
+        if ($this->config->get('CSRF_ATTACK_HIDE_TOKEN_ID')) {
 
-            if (\PHP_SESSION_NONE === session_status()) {
+            $this->sessionStart();
 
-                session_start();
-            }
-
-            $_SESSION['tokenId'] = base64_encode(md5("{$tokenId}-" . time(), true));
+            $_SESSION['tokenId'] = md5("{$tokenId}-" . time());
 
             $tokenId = $_SESSION['tokenId'];
         }
@@ -116,19 +124,25 @@ final class HandlerCSRFAttack implements HandlerInterface
         return $tokenId;
     }
 
-    private function showTokenId(string $tokenId): string
+    /**
+     * sessionStart function
+     *
+     * @return void
+     * 
+     * @throws \Exception if headers already sent.
+     */
+    private function sessionStart(): void
     {
-        if (php_sapi_name() !== 'cli' && $this->config->get('CSRF_ATTACK_HIDE_TOKEN_ID')) {
+        $headersWereSent = (bool) ini_get('session.use_cookies') && headers_sent($file, $line);
+        $headersWereSent && throw new \Exception(sprintf(
+            'Session->start(): The headers have already been sent in "%s" at line %d.',
+            $file,
+            $line
+        ));
 
-            if (\PHP_SESSION_NONE === session_status()) {
+        if (\PHP_SESSION_NONE === session_status()) {
 
-                session_start();
-            }
-
-            $tokenId = isset($_SESSION['tokenId']) ? $_SESSION['tokenId'] : $this->hideTokenId($tokenId);
-            $tokenId = base64_decode($tokenId);
+            session_start();
         }
-
-        return $tokenId;
     }
 }
