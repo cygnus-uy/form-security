@@ -63,6 +63,9 @@ final class FormChecker
         if ($this->checkers) {
 
             foreach ($this->checkers as $key => $handler) {
+
+                $this->errors[$key] = !empty($this->errors[$key]) ? $this->errors[$key] : [];
+
                 try {
 
                     if ($handler) {
@@ -72,7 +75,9 @@ final class FormChecker
                 } catch (\Throwable $th) {
 
                     $submitted = $th->getCode() === HandlerInterface::NOT_ENABLED_CODE;
-                    $this->errors[$key] = $th->getMessage();
+
+                    $this->errors[$key]['code'] = $th->getCode();
+                    $this->errors[$key]['msg'] = $th->getMessage();
                 }
 
                 if (!$submitted) {
@@ -85,5 +90,10 @@ final class FormChecker
         }
 
         return $submitted;
+    }
+
+    public function getErrorMessages(): array
+    {
+        return $this->errors;
     }
 }

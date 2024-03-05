@@ -18,6 +18,9 @@ final class HandlerCSRFAttack implements HandlerInterface
 
     public const DEFAULT_TOKEN_ID = 'TokenId';
 
+    public const UNDEFINED_TOKEN_ID_CODE = 10;
+    public const EMPTY_TOKEN_ID_CODE = 11;
+
     public function __construct(?callable $manager = null, ?array $args = null, ?ConfigInterface $initialConfig = null)
     {
         $this->manager = $manager;
@@ -60,7 +63,7 @@ final class HandlerCSRFAttack implements HandlerInterface
 
             if ($this->defaultManager) {
 
-                $tokenId = $this->hideTokenId($this->args['tokenId']) ?? self::DEFAULT_TOKEN_ID;
+                $tokenId = $this->hideTokenId(isset($this->args['tokenId']) ? $this->args['tokenId'] : self::DEFAULT_TOKEN_ID);
                 $token = $this->defaultManager->refreshToken($tokenId);
 
                 return [
@@ -90,7 +93,13 @@ final class HandlerCSRFAttack implements HandlerInterface
 
                     $this->sessionStart();
 
-                    $tokenId = isset($_SESSION['tokenId']) ? $_SESSION['tokenId'] : $this->args['tokenId'];
+                    $tokenId = isset($_SESSION['tokenId']) ? $_SESSION['tokenId'] : null;
+                    $tokenId = !$tokenId && isset($this->args['tokenId']) ? $this->args['tokenId'] : null;
+
+                    if(!$tokenId) throw new \Exception("Empty token id", self::UNDEFINED_TOKEN_ID_CODE);
+
+                    if(!isset($formData[$tokenId])) throw new \Exception("Undefined token id", self::EMPTY_TOKEN_ID_CODE);
+
                     $token = new CsrfToken($tokenId, $formData[$tokenId]);
 
                     return $this->defaultManager->isTokenValid($token);
