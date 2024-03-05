@@ -60,11 +60,11 @@ final class HandlerCSRFAttack implements HandlerInterface
 
             if ($this->defaultManager) {
 
-                $tokenId = $this->args['tokenId'] ?? self::DEFAULT_TOKEN_ID;
+                $tokenId = $this->hideTokenId($this->args['tokenId']) ?? self::DEFAULT_TOKEN_ID;
                 $token = $this->defaultManager->refreshToken($tokenId);
 
                 return [
-                    $this->hideTokenId($token->getId()) => $token->getValue()
+                    $token->getId() => $token->getValue()
                 ];
             } elseif (isset($this->args['requiredEntries'])) {
 
@@ -107,7 +107,7 @@ final class HandlerCSRFAttack implements HandlerInterface
     /**
      * hideTokenId function
      *
-     * @param string $tokenId
+     * @param  string $tokenId
      * @return string
      */
     private function hideTokenId(string $tokenId): string
@@ -128,17 +128,22 @@ final class HandlerCSRFAttack implements HandlerInterface
      * sessionStart function
      *
      * @return void
-     * 
+     *
      * @throws \Exception if headers already sent.
      */
     private function sessionStart(): void
     {
-        $headersWereSent = (bool) ini_get('session.use_cookies') && headers_sent($file, $line);
-        $headersWereSent && throw new \Exception(sprintf(
-            'Session->start(): The headers have already been sent in "%s" at line %d.',
-            $file,
-            $line
-        ));
+        if (php_sapi_name() === 'cli') {
+
+            $headersWereSent = (bool) ini_get('session.use_cookies') && headers_sent($file, $line);
+            $headersWereSent && throw new \Exception(
+                sprintf(
+                    'Session->start(): The headers have already been sent in "%s" at line %d.',
+                    $file,
+                    $line
+                )
+            );
+        }
 
         if (\PHP_SESSION_NONE === session_status()) {
 
